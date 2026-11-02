@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Son's Sleep & Melatonin Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        android: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { -webkit-tap-highlight-color: transparent; user-select: none; }
+        input, textarea { user-select: text; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+    </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col transition-colors duration-200">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3.5 flex items-center justify-between shadow-xs">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-android-500 text-white flex items-center justify-center shadow-md shadow-android-500/20 text-lg">
+                <i class="fa-solid fa-moon"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base leading-tight">Sleep & Melatonin</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Child Night Tracker</p>
+            </div>
+        </div>
+        <button onclick="toggleDarkMode()" aria-label="Toggle Theme" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+            <i id="theme-icon" class="fa-solid fa-moon text-slate-600 dark:text-slate-300"></i>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-4 pb-28 max-w-md mx-auto w-full space-y-5">
+
+        <!-- Tab 1: Tracker Form -->
+        <div id="tab-tracker" class="tab-content space-y-4">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
+                <h2 class="font-bold text-lg flex items-center text-android-600 dark:text-android-400">
+                    <i class="fa-solid fa-bed mr-2"></i> Record Bedtime
+                </h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Log melatonin and sleep time at night. Wake-up time can be added tomorrow morning.</p>
+
+                <form id="sleep-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                    <!-- Melatonin Time -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            <i class="fa-solid fa-pills mr-1 text-android-500"></i> Melatonin Time
+                        </label>
+                        <input type="datetime-local" id="melatonin-time" required
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-android-500">
+                    </div>
+
+                    <!-- Fell Asleep Time -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            <i class="fa-solid fa-moon mr-1 text-android-500"></i> Fell Asleep Time
+                        </label>
+                        <input type="datetime-local" id="sleep-time" required
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-android-500">
+                    </div>
+
+                    <!-- Woke Up Time (Optional) -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            <i class="fa-solid fa-sun mr-1 text-amber-500"></i> Woke Up Time <span class="font-normal lowercase opacity-75">(optional for now)</span>
+                        </label>
+                        <input type="datetime-local" id="wake-time"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-android-500">
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            <i class="fa-solid fa-note-sticky mr-1 text-android-500"></i> Notes & Observations
+                        </label>
+                        <textarea id="notes" rows="2" placeholder="e.g., Slept peacefully..."
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-android-500 resize-none"></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="w-full bg-android-500 hover:bg-android-600 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-android-500/20 transition-all active:scale-[0.98] flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Save Bedtime Log</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab 2: History Log -->
+        <div id="tab-history" class="tab-content hidden space-y-4">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-bold text-lg flex items-center">
+                        <i class="fa-solid fa-clock-rotate-left mr-2 text-android-500"></i> Sleep History
+                    </h2>
+                    <span id="log-count" class="text-xs bg-android-100 dark:bg-android-900 text-android-700 dark:text-android-300 px-2.5 py-1 rounded-full font-semibold">0 entries</span>
+                </div>
+
+                <div id="history-list" class="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-700 px-6 py-2 flex justify-around items-center z-30 shadow-lg">
+        <button onclick="switchTab('tracker')" id="nav-tracker" class="nav-btn flex flex-col items-center py-1 px-4 rounded-2xl text-android-600 dark:text-android-500 transition-all">
+            <i class="fa-solid fa-pen-to-square text-lg mb-0.5"></i>
+            <span class="text-[10px] font-medium">Tracker</span>
+        </button>
+        <button onclick="switchTab('history')" id="nav-history" class="nav-btn flex flex-col items-center py-1 px-4 rounded-2xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all">
+            <i class="fa-solid fa-calendar-days text-lg mb-0.5"></i>
+            <span class="text-[10px] font-medium">History</span>
+        </button>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-2.5 rounded-2xl shadow-xl text-xs font-semibold opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center space-x-2">
+        <i class="fa-solid fa-circle-check text-android-500"></i>
+        <span id="toast-msg">Saved successfully</span>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        function getLocalDateTimeString(date = new Date()) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        document.getElementById('melatonin-time').value = getLocalDateTimeString();
+        document.getElementById('sleep-time').value = getLocalDateTimeString();
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.className = 'fa-solid fa-moon text-slate-600';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                icon.className = 'fa-solid fa-sun text-slate-300';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').className = 'fa-solid fa-sun text-slate-300';
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-android-600', 'dark:text-android-500');
+                btn.classList.add('text-slate-400');
+            });
+            const activeBtn = document.getElementById('nav-' + tabId);
+            activeBtn.classList.remove('text-slate-400');
+            activeBtn.classList.add('text-android-600', 'dark:text-android-500');
+
+            if (tabId === 'history') {
+                renderHistory();
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2000);
+        }
+
+        let sleepLogs = JSON.parse(localStorage.getItem('child_sleep_tracker_logs_v2') || '[]');
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const melatoninTime = document.getElementById('melatonin-time').value;
+            const sleepTime = document.getElementById('sleep-time').value;
+            const wakeTime = document.getElementById('wake-time').value;
+            const notes = document.getElementById('notes').value.trim();
+
+            let durationStr = "Pending wake-up";
+            if (sleepTime && wakeTime) {
+                const start = new Date(sleepTime);
+                const end = new Date(wakeTime);
+                const diffMs = end - start;
+                if (diffMs > 0) {
+                    const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+                    const mins = Math.round((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    durationStr = `${hrs}h ${mins}m`;
+                } else {
+                    durationStr = "Invalid duration";
+                }
+            }
+
+            const newLog = {
+                id: Date.now(),
+                rawSleep: sleepTime,
+                melatonin: formatDateTime(melatoninTime),
+                sleep: formatDateTime(sleepTime),
+                wake: wakeTime ? formatDateTime(wakeTime) : null,
+                wakeRaw: wakeTime || '',
+                duration: durationStr,
+                notes: notes
+            };
+
+            sleepLogs.unshift(newLog);
+            localStorage.setItem('child_sleep_tracker_logs_v2', JSON.stringify(sleepLogs));
+
+            showToast('Bedtime log saved!');
+            document.getElementById('sleep-form').reset();
+            document.getElementById('melatonin-time').value = getLocalDateTimeString();
+            document.getElementById('sleep-time').value = getLocalDateTimeString();
+            switchTab('history');
+        }
+
+        function formatDateTime(dtStr) {
+            if (!dtStr) return 'Not set';
+            const date = new Date(dtStr);
+            return date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function deleteLog(id) {
+            if (confirm('Are you sure you want to delete this sleep log?')) {
+                sleepLogs = sleepLogs.filter(log => log.id !== id);
+                localStorage.setItem('child_sleep_tracker_logs_v2', JSON.stringify(sleepLogs));
+                renderHistory();
+                showToast('Log deleted');
+            }
+        }
+
+        function saveWakeTime(id) {
+            const inputVal = document.getElementById(`wake-input-${id}`).value;
+            if (!inputVal) {
+                alert('Please select a valid wake-up time.');
+                return;
+            }
+
+            sleepLogs = sleepLogs.map(log => {
+                if (log.id === id) {
+                    log.wake = formatDateTime(inputVal);
+                    log.wakeRaw = inputVal;
+                    if (log.rawSleep) {
+                        const start = new Date(log.rawSleep);
+                        const end = new Date(inputVal);
+                        const diffMs = end - start;
+                        if (diffMs > 0) {
+                            const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+                            const mins = Math.round((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                            log.duration = `${hrs}h ${mins}m`;
+                        } else {
+                            log.duration = "Invalid duration";
+                        }
+                    }
+                }
+                return log;
+            });
+
+            localStorage.setItem('child_sleep_tracker_logs_v2', JSON.stringify(sleepLogs));
+            renderHistory();
+            showToast('Wake-up time recorded!');
+        }
+
+        function resetWakeTime(id) {
+            sleepLogs = sleepLogs.map(log => {
+                if (log.id === id) {
+                    log.wake = null;
+                    log.wakeRaw = '';
+                    log.duration = "Pending wake-up";
+                }
+                return log;
+            });
+            localStorage.setItem('child_sleep_tracker_logs_v2', JSON.stringify(sleepLogs));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const listEl = document.getElementById('history-list');
+            const countEl = document.getElementById('log-count');
+            listEl.innerHTML = '';
+            countEl.textContent = sleepLogs.length + ' entries';
+
+            if (sleepLogs.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-slate-400 text-xs">
+                        <i class="fa-solid fa-moon text-3xl mb-2 opacity-50"></i>
+                        <p>No sleep logs saved yet. Record bedtime using the Tracker tab!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            sleepLogs.forEach(log => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2.5 relative';
+                card.innerHTML = `
+                    <button onclick="deleteLog(${log.id})" class="absolute top-3.5 right-3.5 text-slate-400 hover:text-red-500 p-1 transition-colors" title="Delete Log">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs pr-6">
+                        <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+                            <span class="text-[10px] text-slate-400 block uppercase font-medium">💊 Melatonin</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200">${log.melatonin}</span>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+                            <span class="text-[10px] text-slate-400 block uppercase font-medium">😴 Fell Asleep</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200">${log.sleep}</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+                            <span class="text-[10px] text-slate-400 block uppercase font-medium">⏰ Woke Up</span>
+                            <span class="font-bold ${log.wake ? 'text-slate-700 dark:text-slate-200' : 'text-amber-500'}">${log.wake ? log.wake : 'Pending'}</span>
+                        </div>
+                        <div class="bg-android-50 dark:bg-slate-800 p-2.5 rounded-xl border border-android-100 dark:border-slate-700/50 flex flex-col justify-center">
+                            <span class="text-[10px] text-android-600 dark:text-android-400 block uppercase font-semibold">Total Sleep</span>
+                            <span class="font-bold text-sm text-android-700 dark:text-android-300">${log.duration}</span>
+                        </div>
+                    </div>
+
+                    ${log.notes ? `<div class="text-xs bg-white dark:bg-slate-800 p-2.5 rounded-xl text-slate-600 dark:text-slate-300 italic border border-slate-200/50 dark:border-slate-700/50">"${escapeHtml(log.notes)}"</div>` : ''}
+
+                    <div class="pt-1">
+                        ${!log.wake ? `
+                            <div class="space-y-2 bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase">Set Morning Wake Time</label>
+                                <input type="datetime-local" id="wak
